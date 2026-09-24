@@ -81,7 +81,13 @@ data class LaunchPadDefinition(
     val enabled: Boolean = true,
     val availabilityLabel: String = "COMING SOON",
 )
-data class BlockDefinition(val position: List<Float>, val size: List<Float>, val color: String, val outline: Boolean)
+data class BlockDefinition(
+    val position: List<Float>,
+    val size: List<Float>,
+    val rotation: List<Float>,
+    val color: String,
+    val outline: Boolean,
+)
 data class WorldDefinition(
     val scene: SceneDefinition? = null,
     val palette: Map<String, String> = emptyMap(),

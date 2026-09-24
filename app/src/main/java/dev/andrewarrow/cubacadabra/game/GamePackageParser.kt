@@ -128,6 +128,8 @@ private fun parseBlocks(array: JSONArray?): List<BlockDefinition> = buildList {
         add(BlockDefinition(
             position = value.getJSONArray("position").floatList(),
             size = value.getJSONArray("size").floatList(),
+            rotation = value.optJSONArray("rotation")?.floatList(listOf(0f, 0f, 0f))
+                ?: listOf(0f, 0f, 0f),
             color = value.getString("color"),
             outline = value.optBoolean("outline", true),
         ))
