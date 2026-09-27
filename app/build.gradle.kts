@@ -19,6 +19,13 @@ val thirdGameRoot = rootProject.file("../third-game")
 val localProperties = Properties().apply {
     rootProject.file("local.properties").takeIf { it.isFile }?.inputStream()?.use { stream -> load(stream) }
 }
+val releaseSigningPropertiesFile = rootProject.file("keystore.properties")
+val releaseSigningProperties = Properties().apply {
+    releaseSigningPropertiesFile.takeIf { it.isFile }?.inputStream()?.use { stream -> load(stream) }
+}
+fun releaseSigningProperty(name: String): String =
+    releaseSigningProperties.getProperty(name)?.takeIf { it.isNotBlank() }
+        ?: error("Missing $name in keystore.properties")
 fun configuredValue(name: String): String? =
     providers.gradleProperty(name).orNull ?: localProperties.getProperty(name)
 
@@ -125,10 +132,13 @@ android {
     }
 
     signingConfigs {
-        getByName("debug") {
-            storePassword = "testing"
-            keyAlias = "key0"
-            keyPassword = "testing"
+        if (releaseSigningPropertiesFile.isFile) {
+            create("release") {
+                storeFile = rootProject.file(releaseSigningProperty("storeFile"))
+                storePassword = releaseSigningProperty("storePassword")
+                keyAlias = releaseSigningProperty("keyAlias")
+                keyPassword = releaseSigningProperty("keyPassword")
+            }
         }
     }
 
@@ -139,7 +149,9 @@ android {
             buildConfigField("String", "CUBACADABRA_BACKEND_URL", "\"${configuredBackendUrl ?: "ws://10.0.2.2:8787"}\"")
         }
         release {
-            signingConfig = signingConfigs.getByName("debug")
+            if (releaseSigningPropertiesFile.isFile) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             buildConfigField("String", "CUBACADABRA_GAME_BASE_URL", "\"$releaseGameBaseUrl\"")
             buildConfigField("String", "CUBACADABRA_BACKEND_URL", "\"$releaseBackendUrl\"")
             resValue("bool", "allow_cleartext_traffic", releaseUsesCleartext.toString())

@@ -60,6 +60,14 @@ CUBACADABRA_GAME_BASE_URL=http://192.168.1.10:5173/games/first-game/
 CUBACADABRA_BACKEND_URL=ws://192.168.1.10:8787
 ```
 
+## Signing
+
+Debug builds use Android's standard debug keystore. To sign release builds,
+create an ignored `keystore.properties` file in this repository with
+`storeFile`, `storePassword`, `keyAlias`, and `keyPassword`. `storeFile` may be
+an absolute path or a path relative to this repository. `release.sh` expects
+the keystore at `upload-key.jks` and produces a signed release bundle.
+
 The Android surface approach follows the current [`wgpu` surface target
 API](https://docs.rs/wgpu/latest/wgpu/enum.SurfaceTargetUnsafe.html), whose
 raw-handle path requires the native window to remain valid through surface
