@@ -1,6 +1,6 @@
 # Cubacadabra Android
 
-This is the Kotlin/Jetpack Compose port of `../ios_app`. It loads the same
+This is the Kotlin/Jetpack Compose port of `../ios`. It loads the same
 portable game package, drives the sibling Rust engine, and connects to the same
 world WebSocket service.
 
@@ -8,6 +8,11 @@ The app intentionally has one small state holder: `GameViewModel` owns the
 engine lifecycle, frame loop inputs, package loading, and world socket. Screen
 state stays in Compose. There are no repositories or dependency-injection
 layers because this client has one data source and one implementation.
+
+Cuboom is the first catalog entry and keeps its existing `heavy2` package ID.
+Start with [its source and contribution priorities](https://github.com/cubacadabra/examples/blob/main/cuboom/README.md).
+This is a pre-launch client. Verify native changes in Android Studio on an
+emulator and a physical device.
 
 ## Rust integration
 
@@ -27,7 +32,8 @@ Android Studio must have an NDK installed. The build script discovers it from
 `ANDROID_NDK_HOME`, `ANDROID_NDK_ROOT`, `ANDROID_SDK_ROOT`, `ANDROID_HOME`, or
 the SDK path in `local.properties`.
 
-Gradle builds all three sibling game sources with the shared `../tools` CLI and
+Gradle builds Cuboom and the three small probes from `../examples` with the
+shared native `../tools` CLI and
 includes each generated package directory in the APK. Debug builds
 always start from that bundle. Release builds use a validated cached package
 only when its manifest has a semantic `version` strictly newer than the
@@ -39,7 +45,7 @@ updates must increment their manifest version.
 For local services, the Debug defaults match iOS:
 
 ```text
-Game package: http://10.0.2.2:5173/games/first-game/
+Game package: http://10.0.2.2:5173/games/heavy2/
 Backend:      ws://10.0.2.2:8787
 ```
 
@@ -56,7 +62,7 @@ and host must be on a routable network, and the macOS firewall must allow ports
 Override either value with Gradle properties when the device is on the LAN:
 
 ```text
-CUBACADABRA_GAME_BASE_URL=http://192.168.1.10:5173/games/first-game/
+CUBACADABRA_GAME_BASE_URL=http://192.168.1.10:5173/games/heavy2/
 CUBACADABRA_BACKEND_URL=ws://192.168.1.10:8787
 ```
 

@@ -55,10 +55,12 @@ data class GameCatalogEntry(
 
 object GameCatalog {
     val available = listOf(
-        GameCatalogEntry("first-game", "First Game", "Build together in the clearing"),
-        GameCatalogEntry("second-game", "Second Game", "Drop signals in the relay yard"),
-        GameCatalogEntry("third-game", "Third Game", "Probe every world capability"),
+        GameCatalogEntry("heavy2", "Cuboom", "Restore letter strokes and build a tower together"),
+        GameCatalogEntry("first-game", "Spellbound Schoolyard", "Learn and cast three charms together"),
+        GameCatalogEntry("second-game", "Signal Run", "Drop signals in the relay yard"),
+        GameCatalogEntry("third-game", "Capability Probe", "Probe world capabilities"),
     )
+    val defaultGameID: String get() = available.first().id
 }
 
 data class LaunchRoute(val destinationWorld: String, val authoritative: Boolean = false)

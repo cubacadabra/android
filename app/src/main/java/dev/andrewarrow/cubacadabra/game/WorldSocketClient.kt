@@ -41,7 +41,7 @@ class WorldSocketClient(context: Context, private val scope: CoroutineScope) {
     private var hidden = false
     private var socket: WebSocket? = null
     private var worldId: String? = null
-    private var gameId = "first-game"
+    private var gameId = GameCatalog.defaultGameID
     private var worldConfigs: Map<String, JSONObject> = emptyMap()
     private var stopped = true
     private var reconnectAttempt = 0

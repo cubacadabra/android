@@ -242,7 +242,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             runCatching {
                 val loaded = withContext(Dispatchers.IO) {
-                    loader.load("first-game", additionalMorphPackUrls = accountMorphPackUrls())
+                    loader.load(GameCatalog.defaultGameID, additionalMorphPackUrls = accountMorphPackUrls())
                 }
                 if (generation != gameLoadGeneration) return@launch
                 val created = createEngine(loaded)
@@ -276,7 +276,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
                         frame = initialFrame)
                 }
                 if (!_state.value.isMainMenu) connectWorld(worldId)
-                viewModelScope.launch { loader.refreshPackage("first-game") }
+                viewModelScope.launch { loader.refreshPackage(GameCatalog.defaultGameID) }
             }.onFailure { error ->
                 if (generation == gameLoadGeneration && engine == 0L) update { copy(isLoading = false, errorMessage = error.message ?: "Unknown error") }
             }

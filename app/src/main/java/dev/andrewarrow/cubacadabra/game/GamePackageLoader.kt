@@ -47,14 +47,16 @@ class GamePackageLoader(context: Context) {
     private val applicationContext = context.applicationContext
     private val morphPackCache = MorphPackCache(applicationContext)
     private val preferences = context.getSharedPreferences("game-package", Context.MODE_PRIVATE)
-    private val maximumManifestBytes = 512 * 1024
+    // Runtime collision is inline; the package contract permits 64 MiB manifests.
+    private val maximumManifestBytes = 64 * 1024 * 1024
+    private val maximumPackageDescriptorBytes = 512 * 1024
     private val maximumScriptBytes = 512 * 1024
     private val maximumImageAssetBytes = 8 * 1024 * 1024
     private val maximumMorphPackBytes = 64 * 1024 * 1024
     private val maximumMorphResidentBytes = 16 * 1024 * 1024
 
     suspend fun load(
-        gameID: String = "first-game",
+        gameID: String = GameCatalog.defaultGameID,
         packageBaseUrl: String? = null,
         additionalMorphPackUrls: List<String> = emptyList(),
     ): LoadedGamePackage = withContext(Dispatchers.IO) {
@@ -65,7 +67,7 @@ class GamePackageLoader(context: Context) {
             val base = packageBaseUrl.trimEnd('/') + "/"
             return@withContext loadPackageImages(
                 makePackage(
-                    fetch(URL(base + "package.json"), maximumManifestBytes),
+                    fetch(URL(base + "package.json"), maximumPackageDescriptorBytes),
                     fetch(URL(base + "manifest.json"), maximumManifestBytes),
                     fetch(URL(base + "game.luau"), maximumScriptBytes),
                     audioBaseUrl = base,
@@ -106,7 +108,7 @@ class GamePackageLoader(context: Context) {
         val base = remoteBaseUrl(gameID)
         val downloaded = loadPackageImages(
             makePackage(
-                fetch(URL(base + "package.json"), maximumManifestBytes),
+                fetch(URL(base + "package.json"), maximumPackageDescriptorBytes),
                 fetch(URL(base + "manifest.json"), maximumManifestBytes),
                 fetch(URL(base + "game.luau"), maximumScriptBytes),
                 audioBaseUrl = base,
@@ -120,13 +122,13 @@ class GamePackageLoader(context: Context) {
         downloaded
     }
 
-    suspend fun refreshPackage(gameID: String = "first-game") = withContext(Dispatchers.IO) {
+    suspend fun refreshPackage(gameID: String = GameCatalog.defaultGameID) = withContext(Dispatchers.IO) {
         if (!isValidGameID(gameID)) return@withContext
         runCatching {
             val base = remoteBaseUrl(gameID)
             val downloadedPackage = loadPackageImages(
                 makePackage(
-                    fetch(URL(base + "package.json"), maximumManifestBytes),
+                    fetch(URL(base + "package.json"), maximumPackageDescriptorBytes),
                     fetch(URL(base + "manifest.json"), maximumManifestBytes),
                     fetch(URL(base + "game.luau"), maximumScriptBytes),
                     audioBaseUrl = base,

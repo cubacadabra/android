@@ -13,9 +13,10 @@ plugins {
 val rustRoot = rootProject.file("../rust")
 val rustBuildScript = rootProject.file("scripts/build_rust_android.sh")
 val toolsRoot = rootProject.file("../tools")
-val defaultGameRoot = rootProject.file("../first-game")
-val secondGameRoot = rootProject.file("../second-game")
-val thirdGameRoot = rootProject.file("../third-game")
+val defaultGameRoot = rootProject.file("../examples/first-game")
+val secondGameRoot = rootProject.file("../examples/second-game")
+val thirdGameRoot = rootProject.file("../examples/third-game")
+val cuboomRoot = rootProject.file("../examples/cuboom")
 val localProperties = Properties().apply {
     rootProject.file("local.properties").takeIf { it.isFile }?.inputStream()?.use { stream -> load(stream) }
 }
@@ -31,7 +32,7 @@ fun configuredValue(name: String): String? =
 
 val configuredGameBaseUrl = configuredValue("CUBACADABRA_GAME_BASE_URL")
 val configuredBackendUrl = configuredValue("CUBACADABRA_BACKEND_URL")
-val releaseGameBaseUrl = configuredGameBaseUrl ?: "https://cubacadabra.com/games/first-game/"
+val releaseGameBaseUrl = configuredGameBaseUrl ?: "https://cubacadabra.com/games/heavy2/"
 val releaseBackendUrl = configuredBackendUrl ?: "wss://api.cubacadabra.com"
 val releaseUsesCleartext = releaseGameBaseUrl.startsWith("http://") || releaseBackendUrl.startsWith("ws://")
 
@@ -58,33 +59,49 @@ val buildGamePackage = tasks.register<BuildGamePackageTask>("buildGamePackage") 
         fileTree(defaultGameRoot) { exclude("build/**") },
         fileTree(secondGameRoot) { exclude("build/**") },
         fileTree(thirdGameRoot) { exclude("build/**") },
+        fileTree(cuboomRoot) { exclude("build/**") },
         fileTree(toolsRoot) { exclude(".venv/**", "__pycache__/**") },
+        rootProject.file("LICENSE"),
+        rootProject.file("COPYRIGHT"),
+        fileTree(rustRoot.resolve("assets/fonts")) { include("*-OFL.txt") },
     )
     doFirst {
-        listOf("game-package", "game-package-second-game", "game-package-third-game")
+        listOf("game-package", "game-package-second-game", "game-package-third-game", "game-package-heavy2")
             .map { outputDirectory.get().asFile.resolve(it) }
             .filter { it.isDirectory && !it.resolve(".cubacadabra-build").isFile }
             .forEach(project::delete)
     }
-    environment("PYTHONPATH", toolsRoot.resolve("src").absolutePath)
     commandLine(
-        "python3", "-m", "cubacadabra", "build-game", defaultGameRoot.absolutePath,
+        "sh", toolsRoot.resolve("scripts/cubacadabra.sh").absolutePath,
+        "build-game", defaultGameRoot.absolutePath,
         "--output", outputDirectory.get().asFile.resolve("game-package").absolutePath,
     )
     doLast {
         execOperations.exec {
-            environment("PYTHONPATH", toolsRoot.resolve("src").absolutePath)
             commandLine(
-                "python3", "-m", "cubacadabra", "build-game", secondGameRoot.absolutePath,
+                "sh", toolsRoot.resolve("scripts/cubacadabra.sh").absolutePath,
+                "build-game", secondGameRoot.absolutePath,
                 "--output", outputDirectory.get().asFile.resolve("game-package-second-game").absolutePath,
             )
         }
         execOperations.exec {
-            environment("PYTHONPATH", toolsRoot.resolve("src").absolutePath)
             commandLine(
-                "python3", "-m", "cubacadabra", "build-game", thirdGameRoot.absolutePath,
+                "sh", toolsRoot.resolve("scripts/cubacadabra.sh").absolutePath,
+                "build-game", thirdGameRoot.absolutePath,
                 "--output", outputDirectory.get().asFile.resolve("game-package-third-game").absolutePath,
             )
+        }
+        execOperations.exec {
+            commandLine(
+                "sh", toolsRoot.resolve("scripts/cubacadabra.sh").absolutePath,
+                "build-game", cuboomRoot.absolutePath,
+                "--output", outputDirectory.get().asFile.resolve("game-package-heavy2").absolutePath,
+            )
+        }
+        project.copy {
+            from(rootProject.file("LICENSE"), rootProject.file("COPYRIGHT"))
+            from(fileTree(rustRoot.resolve("assets/fonts")) { include("*-OFL.txt") })
+            into(outputDirectory.get().asFile.resolve("licenses"))
         }
     }
 }
@@ -145,7 +162,7 @@ android {
     buildTypes {
         debug {
             // Android Studio's emulator exposes the host loopback interface as 10.0.2.2.
-            buildConfigField("String", "CUBACADABRA_GAME_BASE_URL", "\"${configuredGameBaseUrl ?: "http://10.0.2.2:5173/games/first-game/"}\"")
+            buildConfigField("String", "CUBACADABRA_GAME_BASE_URL", "\"${configuredGameBaseUrl ?: "http://10.0.2.2:5173/games/heavy2/"}\"")
             buildConfigField("String", "CUBACADABRA_BACKEND_URL", "\"${configuredBackendUrl ?: "ws://10.0.2.2:8787"}\"")
         }
         release {

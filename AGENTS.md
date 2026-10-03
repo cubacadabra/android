@@ -1,4 +1,4 @@
-this app is an android port from ../ios_app
+this app is an android port from ../ios
 
 make sure ui changes work in dark or light mode
 
